@@ -16,5 +16,23 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library name="Javassist-3.29.2-GA.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/javassist-3.29.2-GA.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library name="mysql-connector-j-9.3.0.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/mysql-connector-j-9.3.0.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
   </component>
 </module>
