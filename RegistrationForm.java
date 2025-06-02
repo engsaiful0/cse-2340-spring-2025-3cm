@@ -6,13 +6,13 @@ import java.sql.*;
 
 public class RegistrationForm extends JFrame {
 
-    // Declare input fields
     private JTextField nameField, emailField;
     private JPasswordField passwordField;
+    private JComboBox<String> departmentCombo; // New department dropdown
 
     public RegistrationForm() {
         setTitle("User Registration");
-        setSize(400, 300);
+        setSize(400, 350);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
@@ -48,9 +48,19 @@ public class RegistrationForm extends JFrame {
         passwordField = new JPasswordField(20);
         panel.add(passwordField, gbc);
 
+        // Department dropdown
+        gbc.gridx = 0;
+        gbc.gridy = 3;
+        panel.add(new JLabel("Department:"), gbc);
+
+        gbc.gridx = 1;
+        String[] departments = {"CSE", "EEE", "BBA", "Civil", "Textile"};
+        departmentCombo = new JComboBox<>(departments);
+        panel.add(departmentCombo, gbc);
+
         // Register Button
         gbc.gridx = 1;
-        gbc.gridy = 3;
+        gbc.gridy = 4;
         JButton registerBtn = new JButton("Register");
         panel.add(registerBtn, gbc);
 
@@ -70,18 +80,20 @@ public class RegistrationForm extends JFrame {
         String name = nameField.getText();
         String email = emailField.getText();
         String password = String.valueOf(passwordField.getPassword());
+        String department = (String) departmentCombo.getSelectedItem();
 
-        if (name.isEmpty() || email.isEmpty() || password.isEmpty()) {
+        if (name.isEmpty() || email.isEmpty() || password.isEmpty() || department == null) {
             JOptionPane.showMessageDialog(this, "Please fill all fields.");
             return;
         }
 
         try (Connection conn = DBConnection.getConnection()) {
-            String sql = "INSERT INTO users (name, email, password) VALUES (?, ?, ?)";
+            String sql = "INSERT INTO users (name, email, password, department) VALUES (?, ?, ?, ?)";
             PreparedStatement stmt = conn.prepareStatement(sql);
             stmt.setString(1, name);
             stmt.setString(2, email);
             stmt.setString(3, password);
+            stmt.setString(4, department);
             stmt.executeUpdate();
             JOptionPane.showMessageDialog(this, "Registration successful!");
             clearFields();
@@ -97,6 +109,7 @@ public class RegistrationForm extends JFrame {
         nameField.setText("");
         emailField.setText("");
         passwordField.setText("");
+        departmentCombo.setSelectedIndex(0);
     }
 
     public static void main(String[] args) {
