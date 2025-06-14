@@ -25,6 +25,7 @@ public class UserListView extends JFrame {
         tableModel.addColumn("Department");
         tableModel.addColumn("Edit");
         tableModel.addColumn("Delete");
+        tableModel.addColumn("View"); // New "View" column
 
         fetchUserData();
 
@@ -33,9 +34,24 @@ public class UserListView extends JFrame {
         userTable.getColumn("Edit").setCellEditor(new ButtonEditor(new JCheckBox(), "Edit", userTable, this));
         userTable.getColumn("Delete").setCellRenderer(new ButtonRenderer());
         userTable.getColumn("Delete").setCellEditor(new ButtonEditor(new JCheckBox(), "Delete", userTable, this));
+        userTable.getColumn("View").setCellRenderer(new ButtonRenderer()); // Renderer for "View"
+        userTable.getColumn("View").setCellEditor(new ButtonEditor(new JCheckBox(), "View", userTable, this)); // Editor for "View"
+
 
         JScrollPane scrollPane = new JScrollPane(userTable);
         add(scrollPane, BorderLayout.CENTER);
+
+        // Panel for the "Register New User" button
+        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.CENTER)); // Center the button
+        JButton registerButton = new JButton("Register New User");
+        registerButton.addActionListener(e -> {
+            RegistrationForm registrationForm = new RegistrationForm();
+            registrationForm.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // Important!
+            registrationForm.setVisible(true);
+        });
+        bottomPanel.add(registerButton);
+        add(bottomPanel, BorderLayout.SOUTH);
+
         setVisible(true);
     }
 
@@ -51,7 +67,7 @@ public class UserListView extends JFrame {
                 String email = rs.getString("email");
                 String department = rs.getString("department");
 
-                tableModel.addRow(new Object[]{id, name, email, department, "Edit", "Delete"});
+                tableModel.addRow(new Object[]{id, name, email, department, "Edit", "Delete", "View"});
             }
 
         } catch (SQLException ex) {
@@ -207,6 +223,24 @@ class ButtonEditor extends DefaultCellEditor {
                     }
                 } else {
                      JOptionPane.showMessageDialog(button, "Could not determine user ID for deletion. The ID is missing.", "Missing ID Error", JOptionPane.ERROR_MESSAGE);
+                }
+            } else if ("View".equals(actionCommand)) {
+                Object idObj = table.getModel().getValueAt(row, 0);
+                String name = table.getModel().getValueAt(row, 1).toString();
+                String email = table.getModel().getValueAt(row, 2).toString();
+                String department = table.getModel().getValueAt(row, 3).toString();
+
+                if (idObj != null) {
+                    try {
+                        int userId = Integer.parseInt(idObj.toString());
+                        // Instantiate and display the ViewUserDialog
+                        ViewUserDialog viewDialog = new ViewUserDialog(userListViewInstance, userId, name, email, department);
+                        viewDialog.setVisible(true);
+                    } catch (NumberFormatException ex) {
+                        JOptionPane.showMessageDialog(button, "Invalid user ID format for viewing: " + idObj, "ID Format Error", JOptionPane.ERROR_MESSAGE);
+                    }
+                } else {
+                    JOptionPane.showMessageDialog(button, "Could not determine user ID for viewing. The ID is missing.", "Missing ID Error", JOptionPane.ERROR_MESSAGE);
                 }
             }
         }
