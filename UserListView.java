@@ -99,20 +99,22 @@ public class UserListView extends JFrame {
                 pstmt.setInt(1, userId);
                 int affectedRows = pstmt.executeUpdate();
                 if (affectedRows > 0) {
-                    tableModel.removeRow(rowIndex);
+                    // Delay removal to allow cell editor to finish
+                    SwingUtilities.invokeLater(() -> {
+                        tableModel.removeRow(rowIndex);
+                    });
                     JOptionPane.showMessageDialog(this, "User deleted successfully.", "Success", JOptionPane.INFORMATION_MESSAGE);
                 } else {
                     JOptionPane.showMessageDialog(this, "User not found or could not be deleted.", "Error", JOptionPane.ERROR_MESSAGE);
                 }
             }
         } catch (SQLException ex) {
-            // ex.printStackTrace(); // Removed
             JOptionPane.showMessageDialog(this, "Database error during deletion: " + ex.getMessage(), "Deletion Failed", JOptionPane.ERROR_MESSAGE);
         } catch (Exception ex) {
-            // ex.printStackTrace(); // Removed
             JOptionPane.showMessageDialog(this, "An unexpected error occurred during deletion: " + ex.getMessage(), "Deletion Failed", JOptionPane.ERROR_MESSAGE);
         }
     }
+
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(UserListView::new);
