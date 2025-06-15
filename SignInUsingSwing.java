@@ -84,7 +84,7 @@ public class SignInUsingSwing extends JFrame {
 
         try (Connection conn = DBConnection.getConnection()) {
             // Modified SQL to fetch user ID and name along with checking credentials
-            String sql = "SELECT id, name, email, department FROM users WHERE username = ? AND password = ?";
+            String sql = "SELECT id, name, email, department FROM users WHERE name = ? AND password = ?";
             try (PreparedStatement stmt = conn.prepareStatement(sql)) {
                 stmt.setString(1, username);
                 stmt.setString(2, password);
@@ -167,32 +167,16 @@ public class SignInUsingSwing extends JFrame {
 
             JMenuItem editProfileItem = new JMenuItem("Edit My Profile");
             editProfileItem.addActionListener(e -> {
-                // For now, let's assume EditUserDialog can be adapted or we'll create a new one.
-                // This is a placeholder action.
-                // Option 1: Adapt EditUserDialog if possible (might be tricky due to UserListView dependency)
-                // Option 2: Create a new dialog specifically for editing the current user's profile.
-                // For this iteration, we'll use EditUserDialog, but it needs UserListView for callback.
-                // This means we can't directly use the existing EditUserDialog without UserListView.
-                // A proper solution would be to decouple EditUserDialog or create a new one.
-                // For now, let's try to open EditUserDialog with current data but it won't update a list view.
-                // This will require EditUserDialog to handle a null UserListViewInstance gracefully or a new constructor.
-                // We will need to modify EditUserDialog to accept current user data and not rely on UserListView for updates.
-                // Let's fetch fresh data before opening the edit dialog.
+
                  try (Connection conn = DBConnection.getConnection()) {
                     String sql = "SELECT name, email, department FROM users WHERE id = ?";
                     try (PreparedStatement stmt = conn.prepareStatement(sql)) {
                         stmt.setInt(1, currentUserId);
                         try (ResultSet rs = stmt.executeQuery()) {
                             if (rs.next()) {
-                                // We need a way to update the user without UserListView.
-                                // For now, just opening a dialog. Actual update logic needs to be added.
-                                // The existing EditUserDialog is designed to call back to UserListView.updateUser.
-                                // This will be problematic.
-                                // Let's create a *new* simplified EditCurrentUserProfileDialog later if needed.
-                                // For now, this will likely just display the dialog without functional save for the dashboard context.
+
                                 EditUserDialog editDialog = new EditUserDialog(Dashboard.this, null, currentUserId, rs.getString("name"), rs.getString("email"), rs.getString("department"), -1);
                                 editDialog.setVisible(true); // This is a modal dialog, code below will run after it's closed.
-                                 // The -1 for rowIndex indicates it's not from UserListView. EditUserDialog needs to handle null UserListViewInstance.
 
                                 if (editDialog.getChangesSavedSuccessfully()) {
                                     // Re-fetch user data to update Dashboard's state and welcome label
