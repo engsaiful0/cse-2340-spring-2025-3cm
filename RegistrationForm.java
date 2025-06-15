@@ -6,9 +6,10 @@ import java.sql.*;
 
 public class RegistrationForm extends JFrame {
 
-    private JTextField nameField, emailField;
-    private JPasswordField passwordField;
-    private JComboBox<String> departmentCombo; // New department dropdown
+    JTextField nameField, emailField; // Package-private for testing
+    JPasswordField passwordField; // Package-private for testing
+    JComboBox<String> departmentCombo; // Package-private for testing
+    JButton signInBtn; // Package-private for testing
 
     public RegistrationForm() {
         setTitle("User Registration");
@@ -59,12 +60,18 @@ public class RegistrationForm extends JFrame {
         panel.add(departmentCombo, gbc);
 
         // Register Button
-        gbc.gridx = 1;
+        gbc.gridx = 0; // Changed gridx to 0 to make space for Sign In button
         gbc.gridy = 4;
         JButton registerBtn = new JButton("Register");
         panel.add(registerBtn, gbc);
 
-        // Button listener
+        // Sign In Button
+        gbc.gridx = 1;
+        gbc.gridy = 4;
+        this.signInBtn = new JButton("Sign In"); // Made it a field
+        panel.add(this.signInBtn, gbc);
+
+        // Button listener for Register button
         registerBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -72,11 +79,21 @@ public class RegistrationForm extends JFrame {
             }
         });
 
+        // Button listener for Sign In button
+        this.signInBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                dispose(); // Close current registration form
+                new SignInUsingSwing().setVisible(true); // Open sign-in form
+            }
+        });
+
         add(panel);
         setVisible(true);
     }
 
-    private void registerUser() {
+    // Made package-private for testing
+    void registerUser() {
         String name = nameField.getText();
         String email = emailField.getText();
         String password = String.valueOf(passwordField.getPassword());
@@ -100,12 +117,13 @@ public class RegistrationForm extends JFrame {
         } catch (SQLIntegrityConstraintViolationException dup) {
             JOptionPane.showMessageDialog(this, "Email already registered.");
         } catch (Exception ex) {
-            ex.printStackTrace();
+            // ex.printStackTrace(); // Keep commented out or use logger for production
             JOptionPane.showMessageDialog(this, "Registration failed.");
         }
     }
 
-    private void clearFields() {
+    // Made package-private for testing
+    void clearFields() {
         nameField.setText("");
         emailField.setText("");
         passwordField.setText("");
