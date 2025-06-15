@@ -2,6 +2,9 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 
 public class EditUserDialog extends JDialog {
     private JTextField nameField;
@@ -10,12 +13,15 @@ public class EditUserDialog extends JDialog {
     private JButton saveButton;
     private JButton cancelButton;
 
-    private UserListView userListViewInstance;
+    private UserListView userListViewInstance; // Might be null if called from Dashboard
     private int userId;
-    private int rowIndex;
+    private int rowIndex; // Will be -1 if not from UserListView
+    private JFrame parentFrame; // To show messages correctly
+    private boolean changesSavedSuccessfully = false; // Flag to indicate save status
 
     public EditUserDialog(JFrame parent, UserListView userListView, int userId, String currentName, String currentEmail, String currentDepartment, int rowIndex) {
         super(parent, "Edit User", true); // true for modal
+        this.parentFrame = parent;
         this.userListViewInstance = userListView;
         this.userId = userId;
         this.rowIndex = rowIndex;
@@ -74,8 +80,38 @@ public class EditUserDialog extends JDialog {
             return;
         }
 
-        // Call method in UserListView to update data
-        userListViewInstance.updateUser(userId, newName, newEmail, newDepartment, rowIndex);
+        // Call method in UserListView to update data if available
+        if (userListViewInstance != null) {
+            userListViewInstance.updateUser(userId, newName, newEmail, newDepartment, rowIndex);
+        } else {
+            // Called from Dashboard, perform direct DB update
+            try (Connection conn = DBConnection.getConnection()) {
+                String sql = "UPDATE users SET name = ?, email = ?, department = ? WHERE id = ?";
+                try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                    pstmt.setString(1, newName);
+                    pstmt.setString(2, newEmail);
+                    pstmt.setString(3, newDepartment);
+                    pstmt.setInt(4, userId);
+
+                    int affectedRows = pstmt.executeUpdate();
+                    if (affectedRows > 0) {
+                        JOptionPane.showMessageDialog(this, "Profile updated successfully.", "Success", JOptionPane.INFORMATION_MESSAGE);
+                        this.changesSavedSuccessfully = true;
+                        // If called from Dashboard, parentFrame is Dashboard. It will check getChangesSavedSuccessfully()
+                    } else {
+                        JOptionPane.showMessageDialog(this, "User not found or could not be updated.", "Update Error", JOptionPane.ERROR_MESSAGE);
+                    }
+                }
+            } catch (SQLException ex) {
+                JOptionPane.showMessageDialog(this, "Database error during update: " + ex.getMessage(), "Update Failed", JOptionPane.ERROR_MESSAGE);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "An unexpected error occurred during update: " + ex.getMessage(), "Update Failed", JOptionPane.ERROR_MESSAGE);
+            }
+        }
         dispose(); // Close the dialog
+    }
+
+    public boolean getChangesSavedSuccessfully() {
+        return changesSavedSuccessfully;
     }
 }
